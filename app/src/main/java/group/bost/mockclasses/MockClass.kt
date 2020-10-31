@@ -24,12 +24,12 @@ class MockClass<T : Any>(val obj: T) {
             field.isAccessible = true
             when (field.get(obj)) {
                 is String -> field.set(obj, field.name)
-                is Int -> field.set(obj, index)
-                is Float -> field.set(obj, "$index.$index".toFloat())
-                is Double -> field.set(obj, "$index.$index".toDouble())
+                is Int -> field.set(obj, Random(10).nextInt())
+                is Float -> field.set(obj, Random(10).nextFloat())
+                is Double -> field.set(obj, Random(10).nextDouble())
                 is Char -> field.set(obj, index.toChar())
-                is List<*> -> field.set(obj, getCollectionMock(field))
-//                else -> get(field.get(obj))
+//                is List<*> -> field.set(obj, getCollectionMock(field))
+                else -> get(field.get(obj))
             }
         }
         return obj
@@ -37,8 +37,8 @@ class MockClass<T : Any>(val obj: T) {
 
     private fun getObj(type: Type): Any? {
         return when (type) {
-            String::class.java -> "test"
-            Int::class.java -> Random(10)
+            String::class.java -> ('a'..'z').random()
+            Int::class.java -> Random(10).nextInt()
             Float::class.java -> Random(10).nextFloat()
             Double::class.java -> Random(10).nextDouble()
             Char::class.java -> Random(10).nextInt().toChar()

@@ -6,5 +6,6 @@ data class TestMo(
     val dbl: Double = 0.0,
     val float: Float = 0f,
     val char: Char = 'a',
-    var list: List<Test1Mo> = listOf()
+    var test1: Test1Mo = Test1Mo()
+//    var list: List<Test1Mo> = listOf()
 )
