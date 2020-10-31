@@ -1,0 +1,2 @@
+rootProject.name='Mock Classes'
+include ':app'
