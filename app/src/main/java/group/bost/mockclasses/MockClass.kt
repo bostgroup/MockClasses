@@ -8,27 +8,26 @@ import java.util.*
 
 class MockClass<T : Any>(val obj: T) {
 
+    private val random = Random()
+
     fun get(): T {
         return get(obj)
     }
 
     private fun <T : Any> get(obj: T): T {
         val objClass = obj::class.java
-        val fields = try {
-            (obj as Class<*>).declaredFields
-        } catch (e: Throwable) {
-            objClass.declaredFields
-        }
+        val fields = objClass.declaredFields
+
 //        val fields = objClass.declaredFields
         fields.forEachIndexed { index, field ->
             field.isAccessible = true
             when (field.get(obj)) {
                 is String -> field.set(obj, field.name)
-                is Int -> field.set(obj, Random(10).nextInt())
-                is Float -> field.set(obj, Random(10).nextFloat())
-                is Double -> field.set(obj, Random(10).nextDouble())
-                is Char -> field.set(obj, index.toChar())
-//                is List<*> -> field.set(obj, getCollectionMock(field))
+                is Int -> field.set(obj, random.nextInt())
+                is Float -> field.set(obj, random.nextFloat())
+                is Double -> field.set(obj, random.nextDouble())
+                is Char -> field.set(obj, random.nextInt().toChar())
+                is List<*> -> field.set(obj, getCollectionMock(field))
                 else -> get(field.get(obj))
             }
         }
@@ -38,11 +37,11 @@ class MockClass<T : Any>(val obj: T) {
     private fun getObj(type: Type): Any? {
         return when (type) {
             String::class.java -> ('a'..'z').random()
-            Int::class.java -> Random(10).nextInt()
-            Float::class.java -> Random(10).nextFloat()
-            Double::class.java -> Random(10).nextDouble()
-            Char::class.java -> Random(10).nextInt().toChar()
-            else -> get(type as Class<*>)
+            Int::class.java -> random.nextInt()
+            Float::class.java -> random.nextFloat()
+            Double::class.java -> random.nextDouble()
+            Char::class.java -> random.nextInt().toChar()
+            else -> get((type as Class<*>).newInstance())
         }
     }
 
@@ -50,7 +49,7 @@ class MockClass<T : Any>(val obj: T) {
         val type = obj.genericType
         val pType = type as ParameterizedType
         val classType = pType.actualTypeArguments[0]
-        return listOf(get(classType as Class<Any>))
+        return listOf(getObj(classType as Class<*>))
     }
 
     fun toJson(): String {
