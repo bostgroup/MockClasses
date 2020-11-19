@@ -11,7 +11,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         btnRun.setOnClickListener {
-            tvLog.text = MockClass(TestMo()).toJson()
+            tvLog.text = MockClass(TestMo::class.java).get().toJson()
         }
     }
 }

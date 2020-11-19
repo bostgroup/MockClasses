@@ -6,20 +6,19 @@ import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.util.*
 
-class MockClass<T : Any>(val obj: T) {
+class MockClass<T : Any>(private val obj: Class<T>) {
 
     private val random = Random()
 
     fun get(): T {
-        return get(obj)
+        return get(obj.newInstance())
     }
 
     private fun <T : Any> get(obj: T): T {
         val objClass = obj::class.java
         val fields = objClass.declaredFields
 
-//        val fields = objClass.declaredFields
-        fields.forEachIndexed { index, field ->
+        fields.forEachIndexed { _, field ->
             field.isAccessible = true
             when (field.get(obj)) {
                 is String -> field.set(obj, field.name)
@@ -52,8 +51,6 @@ class MockClass<T : Any>(val obj: T) {
         return listOf(getObj(classType as Class<*>))
     }
 
-    fun toJson(): String {
-        return Gson().toJson(get())
-    }
-
 }
+
+fun Any.toJson() = Gson().toJson(this)!!
