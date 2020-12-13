@@ -1,6 +1,7 @@
 package group.bost.mockclasses
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -11,7 +12,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         btnRun.setOnClickListener {
-            tvLog.text = MockClass(TestMo::class.java).get().toJson()
+//            tvLog.text = MockClass(TestMo::class.java).get().toJson()
+            MockClass(Test1Mo::class.java).getWithNullable {
+                Log.d("qweqweqwe", "onCreate: "+it.toJson())
+            }
         }
     }
+
 }

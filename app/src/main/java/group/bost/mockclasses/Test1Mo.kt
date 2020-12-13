@@ -1,9 +1,10 @@
 package group.bost.mockclasses
 
+import androidx.annotation.NonNull
+import androidx.annotation.Nullable
+
 data class Test1Mo(
     val str: String = "",
-    val int: Int = 0,
-    val dbl: Double = 0.0,
-    val float: Float = 0f,
-    val char: Char = 'a'
+    val str1: String? = "",
+    val str3: String? = ""
 )
