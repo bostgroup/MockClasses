@@ -1,5 +1,6 @@
 package group.bost.mockclasses
 
+import android.util.Log
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -12,5 +13,10 @@ class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
         assertEquals(4, 2 + 2)
+
+        MockClass(Test1Mo::class.java).getWithNullable {
+            Log.d("qweqweqwe", "onCreate: " + it.toJson())
+        }
+
     }
 }

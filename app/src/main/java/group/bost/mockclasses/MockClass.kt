@@ -47,25 +47,28 @@ class MockClass<T : Any>(private val obj: Class<T>) {
             field.isAccessible = true
 
             if (obj.isNullable(field.name)) {
-                when (field.get(obj)) {
-                    is String -> field.set(obj, if (isNullable[nullableIndex]) null else field.name)
-                    is Int -> field.set(
+                when (field.type) {
+                    String::class.java -> field.set(
+                        obj,
+                        if (isNullable[nullableIndex]) null else field.name
+                    )
+                    Int::class.java, java.lang.Integer::class.java -> field.set(
                         obj,
                         if (isNullable[nullableIndex]) null else index
                     )
-                    is Float -> field.set(
+                    Float::class.java, java.lang.Float::class.java -> field.set(
                         obj,
                         if (isNullable[nullableIndex]) null else index.toFloat()
                     )
-                    is Double -> field.set(
+                    Double::class.java, java.lang.Double::class.java -> field.set(
                         obj,
                         if (isNullable[nullableIndex]) null else index.toDouble()
                     )
-                    is Char -> field.set(
+                    Char::class.java, java.lang.Character::class.java -> field.set(
                         obj,
                         if (isNullable[nullableIndex]) null else index.toChar()
                     )
-                    is List<*> -> field.set(
+                    List::class.java -> field.set(
                         obj,
                         if (isNullable[nullableIndex]) null else getCollectionMock(field)
                     )
@@ -73,13 +76,22 @@ class MockClass<T : Any>(private val obj: Class<T>) {
                 }
                 nullableIndex++
             } else {
-                when (field.get(obj)) {
-                    is String -> field.set(obj, field.name)
-                    is Int -> field.set(obj, index)
-                    is Float -> field.set(obj, index.toFloat())
-                    is Double -> field.set(obj, index.toDouble())
-                    is Char -> field.set(obj, index.toChar())
-                    is List<*> -> field.set(obj, getCollectionMock(field))
+                when (field.type) {
+                    String::class.java -> field.set(obj, field.name)
+                    Int::class.java, java.lang.Integer::class.java -> field.set(obj, index)
+                    Float::class.java, java.lang.Float::class.java -> field.set(
+                        obj,
+                        index.toFloat()
+                    )
+                    Double::class.java, java.lang.Double::class.java -> field.set(
+                        obj,
+                        index.toDouble()
+                    )
+                    Char::class.java, java.lang.Character::class.java -> field.set(
+                        obj,
+                        index.toChar()
+                    )
+                    List::class.java -> field.set(obj, getCollectionMock(field))
                     else -> get(field.get(obj))
                 }
             }
@@ -93,13 +105,13 @@ class MockClass<T : Any>(private val obj: Class<T>) {
 
         fields.forEachIndexed { index, field ->
             field.isAccessible = true
-            when (field.get(obj)) {
-                is String -> field.set(obj, field.name)
-                is Int -> field.set(obj, index)
-                is Float -> field.set(obj, index.toFloat())
-                is Double -> field.set(obj, index.toDouble())
-                is Char -> field.set(obj, index.toChar())
-                is List<*> -> field.set(obj, getCollectionMock(field))
+            when (field.type) {
+                String::class.java -> field.set(obj, field.name)
+                Int::class.java, java.lang.Integer::class.java -> field.set(obj, index)
+                Float::class.java, java.lang.Float::class.java -> field.set(obj, index.toFloat())
+                Double::class.java, java.lang.Double::class.java -> field.set(obj, index.toDouble())
+                Char::class.java, java.lang.Character::class.java -> field.set(obj, index.toChar())
+                List::class.java -> field.set(obj, getCollectionMock(field))
                 else -> get(field.get(obj))
             }
         }
