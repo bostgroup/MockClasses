@@ -22,6 +22,15 @@ class MockClass<T : Any>(private val obj: Class<T>) {
         return this
     }
 
+    fun setExceptionClassFields(fieldName: Class<*>): MockClass<T> {
+        exceptionFields.addAll(
+            fieldName.declaredFields.map {
+                it.name
+            }
+        )
+        return this
+    }
+
     fun build(): T {
         return build(obj.newInstanceMock())
     }

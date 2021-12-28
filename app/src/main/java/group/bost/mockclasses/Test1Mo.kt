@@ -7,4 +7,4 @@ data class Test1Mo(
     val str: String,
     val str1: String?,
     val str3: String?
-)
+): Test2Mo()

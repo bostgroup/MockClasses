@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
 //            }
 
             tvLog.text = MockClass(Test1Mo::class.java)
-                .setExceptionField("str1")
+                .setExceptionClassFields(Test2Mo::class.java)
                 .build()
                 .copy(
                     str1 = "rwrwerwerwerwe"
