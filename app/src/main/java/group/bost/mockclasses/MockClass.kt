@@ -9,8 +9,21 @@ import kotlin.reflect.full.declaredMemberProperties
 
 class MockClass<T : Any>(private val obj: Class<T>) {
 
-    fun get(): T {
-        return get(obj.newInstanceMock())
+    private val customValues = mutableMapOf<String, Any>()
+    private val exceptionFields = mutableListOf<String>()
+
+    fun <FN : Any> setCustomParam(fieldName: String, value: FN): MockClass<T> {
+        customValues[fieldName] = value
+        return this
+    }
+
+    fun setExceptionField(fieldName: String): MockClass<T> {
+        exceptionFields.add(fieldName)
+        return this
+    }
+
+    fun build(): T {
+        return build(obj.newInstanceMock())
     }
 
     fun getWithNullable(cb: (T) -> Unit) {
@@ -25,21 +38,21 @@ class MockClass<T : Any>(private val obj: Class<T>) {
                 val isNullable = ((i / 2.0.pow(j)) % 2).toInt() == 1
                 isNullableList.add(isNullable)
             }
-            cb.invoke(get(instanceObj, isNullableList))
+            cb.invoke(build(instanceObj, isNullableList))
             isNullableList.clear()
         }
 
     }
 
     private fun Class<T>.newInstanceMock() = if (this.constructors.isEmpty()) {
-        get(this.newInstance())
+        build(newInstance())
     } else {
         val constructor = obj.getConstructor(*obj.constructors[0].parameterTypes)
         val constructorParams = obj.constructors[0].parameterTypes.map { getObj(it) }.toTypedArray()
-        get(constructor.newInstance(*constructorParams))
+        build(constructor.newInstance(*constructorParams))
     }
 
-    private fun <T : Any> get(obj: T, isNullable: MutableList<Boolean>): T {
+    private fun <T : Any> build(obj: T, isNullable: MutableList<Boolean>): T {
         val objClass = obj::class.java
         val fields = objClass.declaredFields
         var nullableIndex = 0
@@ -72,12 +85,15 @@ class MockClass<T : Any>(private val obj: Class<T>) {
                         obj,
                         if (isNullable[nullableIndex]) null else getCollectionMock(field)
                     )
-                    else -> if (!isNullable[nullableIndex]) get(field.get(obj))
+                    else -> if (!isNullable[nullableIndex]) build(field.get(obj))
                 }
                 nullableIndex++
             } else {
                 when (field.type) {
-                    String::class.java -> field.set(obj, field.name)
+                    String::class.java -> field.set(
+                        obj,
+                        customValues.getOrDefault<String>(field.name, field.name)
+                    )
                     Int::class.java, java.lang.Integer::class.java -> field.set(obj, index)
                     Float::class.java, java.lang.Float::class.java -> field.set(
                         obj,
@@ -92,27 +108,39 @@ class MockClass<T : Any>(private val obj: Class<T>) {
                         index.toChar()
                     )
                     List::class.java -> field.set(obj, getCollectionMock(field))
-                    else -> get(field.get(obj))
+                    else -> build(field.get(obj))
                 }
             }
         }
         return obj
     }
 
-    private fun <T : Any> get(obj: T): T {
+    private fun <T : Any> build(obj: T): T {
         val objClass = obj::class.java
         val fields = objClass.declaredFields
 
-        fields.forEachIndexed { index, field ->
+        fields.forEachIndexed fields@{ index, field ->
             field.isAccessible = true
             when (field.type) {
-                String::class.java -> field.set(obj, field.name)
-                Int::class.java, java.lang.Integer::class.java -> field.set(obj, index)
-                Float::class.java, java.lang.Float::class.java -> field.set(obj, index.toFloat())
-                Double::class.java, java.lang.Double::class.java -> field.set(obj, index.toDouble())
-                Char::class.java, java.lang.Character::class.java -> field.set(obj, index.toChar())
-                List::class.java -> field.set(obj, getCollectionMock(field))
-                else -> get(field.get(obj))
+                String::class.java -> {
+                    field.setParam(obj, "")
+                }
+                Int::class.java, java.lang.Integer::class.java -> {
+                    field.setParam(obj, index)
+                }
+                Float::class.java, java.lang.Float::class.java -> {
+                    field.setParam(obj, index.toFloat())
+                }
+                Double::class.java, java.lang.Double::class.java -> {
+                    field.setParam(obj, index.toDouble())
+                }
+                Char::class.java, java.lang.Character::class.java -> {
+                    field.setParam(obj, index.toChar())
+                }
+                List::class.java -> {
+                    field.setParam(obj, getCollectionMock(field))
+                }
+                else -> build(field.get(obj))
             }
         }
         return obj
@@ -126,7 +154,7 @@ class MockClass<T : Any>(private val obj: Class<T>) {
             Double::class.java, java.lang.Double::class.java -> 1.toDouble()
             Char::class.java, java.lang.Character::class.java -> 1.toChar()
             List::class.java -> emptyList<Any>()
-            else -> get((type as Class<*>).newInstance())
+            else -> build((type as Class<*>).newInstance())
         }
     }
 
@@ -143,6 +171,24 @@ class MockClass<T : Any>(private val obj: Class<T>) {
 
     private fun Any.countNullableFields() =
         this::class.declaredMemberProperties.count { it.returnType.isMarkedNullable }
+
+    private fun <DV> Map<String, Any>.getOrDefault(fieldName: String, defaultValue: DV?) =
+        this[fieldName] ?: defaultValue
+
+    private fun List<String>.hasValue(fieldName: String) =
+        this.find { it == fieldName } != null
+
+
+    private fun <T, V> Field.setParam(obj: T, value: V) {
+        set(
+            obj,
+            if (exceptionFields.hasValue(name)) {
+                null
+            } else {
+                customValues.getOrDefault(name, value)
+            }
+        )
+    }
 
 }
 

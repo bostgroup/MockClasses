@@ -16,7 +16,13 @@ class MainActivity : AppCompatActivity() {
 //                Log.d("qweqweqwe", "onCreate: "+it.toJson())
 //            }
 
-            tvLog.text = MockClass(TestMo::class.java).get().toJson()
+            tvLog.text = MockClass(Test1Mo::class.java)
+                .setExceptionField("str1")
+                .build()
+                .copy(
+                    str1 = "rwrwerwerwerwe"
+                )
+                .toJson()
 
         }
     }
